@@ -139,9 +139,18 @@
         const db = firebase.firestore();
 
         async function signIn() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            await auth.signInWithPopup(provider);
-        }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+        console.log("جاري محاولة تسجيل الدخول...");
+        const result = await auth.signInWithPopup(provider);
+        alert("نجح الاتصال بـ Firebase! أهلاً " + result.user.displayName);
+    } catch (error) {
+        // هذه هي أهم رسالة ستظهر على شاشة هاتفك
+        alert("حدث خطأ! السبب:\n" + error.message);
+        console.log("كود الخطأ: ", error.code);
+    }
+}
+
 
         document.getElementById('loginBtn').onclick = () => {
             if(auth.currentUser) auth.signOut().then(() => location.reload());
