@@ -167,7 +167,7 @@
         
         try {
             const doc = await userRef.get();
-            if(!doc.exists()) {
+            if!doc.exists() {
                 // محاولة إنشاء المستند
                 await userRef.set({
                     name: user.displayName,
