@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المكتبة الرسمية | Bookify</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #161616;
+            --gold: #D4AF37;
+            --text: #F5F5F5;
+            --muted: #888888;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; }
+
+        /* رأس الصفحة */
+        .store-header {
+            padding: 60px 7%; text-align: center;
+            background: linear-gradient(to bottom, #1a1a1a, var(--bg));
+            border-bottom: 1px solid #222;
+        }
+        .store-header .brand { color: var(--gold); font-weight: 900; letter-spacing: 2px; margin-bottom: 10px; }
+        .store-header h1 { font-size: 2.5rem; margin-bottom: 15px; }
+
+        /* شبكة الكتب */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 7%; }
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        /* كرت الكتاب */
+        .book-card {
+            background: var(--card); border-radius: 20px; padding: 20px;
+            border: 1px solid #222; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column;
+        }
+        .book-card:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        .book-cover {
+            width: 100%; height: 380px; object-fit: cover;
+            border-radius: 15px; margin-bottom: 20px;
+            background: #222; /* لودر بسيط في حال لم تظهر الصورة */
+        }
+
+        .book-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+        .book-price { font-size: 1.25rem; color: var(--gold); font-weight: 900; margin-bottom: 15px; }
+        .book-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; flex-grow: 1; }
+
+        .buy-btn {
+            background: var(--gold); color: #000; text-align: center;
+            padding: 15px; border-radius: 12px; text-decoration: none;
+            font-weight: 900; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .buy-btn:hover { background: #f9e076; transform: scale(1.02); }
+
+        /* لودر التحميل */
+        #loader { text-align: center; padding: 50px; font-size: 1.2rem; color: var(--gold); }
+    </style>
+</head>
+<body>
+
+    <header class="store-header">
+        <div class="brand">BOOKIFY EXCLUSIVE</div>
+        <h1 id="storeTitle">مكتبة الناشر</h1>
+        <p id="storeStatus" style="color: var(--muted);">تصفح أفضل الكتب واختر ما يناسبك</p>
+    </header>
+
+    <div class="container">
+        <div id="loader"><i class="fas fa-spinner fa-spin"></i> جاري تحميل المكتبة...</div>
+        <div id="publicBooks" class="books-grid"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // إعدادات Firebase الخاصة بك
+        const firebaseConfig = {
+            apiKey: "AIzaSyB95xhEp4Ssa4DqOPt9_FP7J8ETizhdh-I",
+            authDomain: "bookify-bfe88.firebaseapp.com",
+            projectId: "bookify-bfe88",
+            storageBucket: "bookify-bfe88.firebasestorage.app",
+            messagingSenderId: "852922537250",
+            appId: "1:852922537250:web:aa12b414eb2f156b8dc17b"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 1. الحصول على رقم الناشر من الرابط
+        const urlParams = new URLSearchParams(window.location.search);
+        const pubId = urlParams.get('id');
+
+        if (pubId) {
+            fetchStoreData(pubId);
+        } else {
+            document.getElementById('loader').innerHTML = "<i class='fas fa-exclamation-triangle'></i> عذراً، هذا الرابط غير صالح.";
+        }
+
+        async function fetchStoreData(uid) {
+            try {
+                // جلب اسم الناشر
+                const userDoc = await db.collection('users').doc(uid).get();
+                if (userDoc.exists) {
+                    document.getElementById('storeTitle').innerText = "مكتبة " + userDoc.data().name;
+                }
+
+                // جلب الكتب الخاصة بهذا الناشر فقط
+                const snapshot = await db.collection('books')
+                                   .where('uid', '==', uid)
+                                   .orderBy('timestamp', 'desc')
+                                   .get();
+
+                const grid = document.getElementById('publicBooks');
+                document.getElementById('loader').style.display = 'none';
+
+                if (snapshot.empty) {
+                    grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: #888;'>لا توجد كتب منشورة في هذه المكتبة بعد.</p>";
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const book = doc.data();
+                    const bookHtml = `
+                        <div class="book-card">
+                            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=No+Image'}" class="book-cover" alt="${book.title}">
+                            <h3 class="book-title">${book.title}</h3>
+                            <div class="book-price">${book.price} ج.س</div>
+                            <p class="book-desc">${book.desc || 'لا يوجد وصف متاح لهذا الكتاب.'}</p>
+                            <a href="https://wa.me/249122892258?text=السلام عليكم، أرغب في شراء كتاب: ${encodeURIComponent(book.title)}" class="buy-btn">
+                                <i class="fab fa-whatsapp"></i> اطلب الآن عبر واتساب
+                            </a>
+                        </div>
+                    `;
+                    grid.innerHTML += bookHtml;
+                });
+
+            } catch (error) {
+                console.error("Error loading store:", error);
+                document.getElementById('loader').innerText = "حدث خطأ أثناء تحميل البيانات.";
+            }
+        }
+    </script>
+</body>
+</html>
