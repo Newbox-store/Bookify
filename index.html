@@ -158,28 +158,45 @@
         };
 
         auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                document.getElementById('heroSection').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('loginBtn').innerText = "خروج";
-                document.getElementById('uName').innerText = user.displayName;
+    if (user) {
+        // إظهار اللوحة فوراً لتجنب التعليق
+        document.getElementById('heroSection').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        
+        const userRef = db.collection('users').doc(user.uid);
+        
+        try {
+            const doc = await userRef.get();
+            if(!doc.exists()) {
+                // محاولة إنشاء المستند
+                await userRef.set({
+                    name: user.displayName,
+                    email: user.email,
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("تم إنشاء ملفك الشخصي بنجاح!");
+            } else {
+                // إذا كان الحساب موجوداً، حدث البيانات المعروضة
+                const data = doc.data();
+                document.getElementById('uName').innerText = data.name || user.displayName;
                 document.getElementById('uImg').src = user.photoURL;
                 document.getElementById('uEmail').innerText = user.email;
-
-                // فحص حالة الاشتراك
-                const userRef = db.collection('users').doc(user.uid);
-                const doc = await userRef.get();
-                if(!doc.exists()) {
-                    await userRef.set({ name: user.displayName, status: 'pending' });
-                } else if(doc.data().status === 'active') {
+                
+                if(data.status === 'active') {
                     document.getElementById('paywallArea').style.display = 'none';
                     document.getElementById('activeContent').style.display = 'block';
                     document.getElementById('statusLabel').innerText = "الحساب: عضوية ملكية";
-                    // توليد رابط المتجر
                     document.getElementById('myStoreLink').value = window.location.origin + window.location.pathname.replace('index.html','') + 'store.html?id=' + user.uid;
                 }
             }
-        });
+        } catch (error) {
+            console.error("خطأ Firestore:", error);
+            alert("فشل تحديث البيانات من Firestore: " + error.message);
+        }
+    }
+});
+
 
         async function addBook() {
             const t = document.getElementById('title').value;
