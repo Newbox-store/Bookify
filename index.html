@@ -54,6 +54,8 @@
 
         .sidebar { background: var(--bg-card); border-radius: 24px; padding: 40px 20px; border: 1px solid #222; text-align: center; }
         .profile-img { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--gold); margin-bottom: 20px; }
+        .user-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; cursor: pointer; border-bottom: 1px dashed transparent; transition: 0.3s; }
+        .user-name:hover { border-color: var(--gold); }
 
         .paywall-content { background: var(--bg-card); border-radius: 24px; padding: 60px; text-align: center; border: 1px dashed var(--gold); }
         .whatsapp-btn { display: inline-block; background: #25D366; color: white; padding: 18px 35px; border-radius: 12px; font-weight: 700; text-decoration: none; margin-top: 20px; }
@@ -65,6 +67,8 @@
         .book-form-card input, .book-form-card textarea {
             width: 100%; padding: 15px; margin-bottom: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 10px; font-family: 'Tajawal';
         }
+
+        .section-label { color: var(--gold); margin-bottom: 15px; font-weight: 700; display: block; }
     </style>
 </head>
 <body>
@@ -86,9 +90,18 @@
         <div class="dashboard-grid">
             <aside class="sidebar">
                 <img id="uImg" src="" class="profile-img">
-                <div id="uName" class="user-name" contenteditable="true" onblur="updateName()">USER1287</div>
+                <div id="uName" class="user-name" contenteditable="true">تحميل...</div>
                 <div id="uEmail" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;"></div>
-                <div id="statusLabel" style="color: var(--gold);">الحساب: قيد الانتظار</div>
+                <div id="statusLabel" style="color: var(--gold); margin-bottom: 20px;">الحساب: قيد الانتظار</div>
+                
+                <hr style="border: 0; border-top: 1px solid #333; margin-bottom: 20px;">
+                
+                <div style="text-align: right; padding: 0 10px;">
+                    <label class="section-label" style="font-size: 0.9rem;">إعدادات المكتبة:</label>
+                    <input type="number" id="userPhone" placeholder="رقم واتساب (249...)" style="width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px;">
+                    <textarea id="paymentInfo" placeholder="وسيلة الدفع (مثال: بنكك 12345)" style="width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 15px; font-family: 'Tajawal'; resize: none;"></textarea>
+                    <button class="btn-auth" style="width: 100%; padding: 8px;" onclick="updateProfile()">حفظ البيانات</button>
+                </div>
             </aside>
 
             <main>
@@ -114,19 +127,8 @@
                         <input type="number" id="price" placeholder="السعر (ج.س)">
                         <input type="text" id="cover" placeholder="رابط صورة الغلاف">
                         <textarea id="desc" rows="3" placeholder="وصف الكتاب"></textarea>
-                 
-                        <button class="btn-main" style="width: 100%;" onclick="addBook()">نشر الكتاب</button>
+                        <button class="btn-main" style="width: 100%;" onclick="addBook()">نشر الكتاب في مكتبتك</button>
                     </div>
-               
-                <div class="mb-3">
-    <label class="form-label">رقم واتساب الناشر (بالصيغة الدولية 249...)</label>
-    <input type="number" id="userPhone" class="form-control" placeholder="249123456789">
-</div>
-<div class="mb-3">
-    <label class="form-label">وسيلة الدفع (مثلاً: بنكك 1234567)</label>
-    <textarea id="paymentInfo" class="form-control" placeholder="أدخل تفاصيل الدفع التي ستظهر للمشترين"></textarea>
-</div>
-
                 </div>
             </main>
         </div>
@@ -150,18 +152,13 @@
         const db = firebase.firestore();
 
         async function signIn() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-        console.log("جاري محاولة تسجيل الدخول...");
-        const result = await auth.signInWithPopup(provider);
-        alert("نجح الاتصال بـ Firebase! أهلاً " + result.user.displayName);
-    } catch (error) {
-        // هذه هي أهم رسالة ستظهر على شاشة هاتفك
-        alert("حدث خطأ! السبب:\n" + error.message);
-        console.log("كود الخطأ: ", error.code);
-    }
-}
-
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                alert("حدث خطأ: " + error.message);
+            }
+        }
 
         document.getElementById('loginBtn').onclick = () => {
             if(auth.currentUser) auth.signOut().then(() => location.reload());
@@ -169,59 +166,76 @@
         };
 
         auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        // إظهار اللوحة فوراً لتجنب التعليق
-        document.getElementById('heroSection').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        
-        const userRef = db.collection('users').doc(user.uid);
-        
-        try {
-            const doc = await userRef.get();
-            if(!doc.exists) {
-                // محاولة إنشاء المستند
-                await userRef.set({
-                    name: user.displayName,
-                    email: user.email,
-                    status: 'pending',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("تم إنشاء ملفك الشخصي بنجاح!");
-            } else {
-                // إذا كان الحساب موجوداً، حدث البيانات المعروضة
-                const data = doc.data();
-                document.getElementById('uName').innerText = data.name || user.displayName;
-                document.getElementById('uImg').src = user.photoURL;
-                document.getElementById('uEmail').innerText = user.email;
+            if (user) {
+                document.getElementById('heroSection').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('loginBtn').innerText = "تسجيل الخروج";
                 
-                if(data.status === 'active') {
-                    document.getElementById('paywallArea').style.display = 'none';
-                    document.getElementById('activeContent').style.display = 'block';
-                    document.getElementById('statusLabel').innerText = "الحساب: عضوية ملكية";
-                    document.getElementById('myStoreLink').value = window.location.origin + window.location.pathname.replace('index.html','') + 'store.html?id=' + user.uid;
+                const userRef = db.collection('users').doc(user.uid);
+                const doc = await userRef.get();
+                
+                if(!doc.exists) {
+                    await userRef.set({
+                        name: user.displayName,
+                        email: user.email,
+                        status: 'pending',
+                        phone: '',
+                        payment: '',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    const data = doc.data();
+                    document.getElementById('uName').innerText = data.name || user.displayName;
+                    document.getElementById('uImg').src = user.photoURL;
+                    document.getElementById('uEmail').innerText = user.email;
+                    document.getElementById('userPhone').value = data.phone || '';
+                    document.getElementById('paymentInfo').value = data.payment || '';
+                    
+                    if(data.status === 'active') {
+                        document.getElementById('paywallArea').style.display = 'none';
+                        document.getElementById('activeContent').style.display = 'block';
+                        document.getElementById('statusLabel').innerText = "الحساب: عضوية ملكية";
+                        document.getElementById('myStoreLink').value = window.location.href.split('index.html')[0] + 'store.html?id=' + user.uid;
+                    }
                 }
             }
-        } catch (error) {
-            console.error("خطأ Firestore:", error);
-            alert("فشل تحديث البيانات من Firestore: " + error.message);
-        }
-    }
-});
+        });
 
+        async function updateProfile() {
+            const user = auth.currentUser;
+            const newName = document.getElementById('uName').innerText;
+            const phone = document.getElementById('userPhone').value;
+            const payment = document.getElementById('paymentInfo').value;
+
+            try {
+                await db.collection('users').doc(user.uid).update({
+                    name: newName,
+                    phone: phone,
+                    payment: payment
+                });
+                alert("تم حفظ بيانات مكتبتك بنجاح!");
+            } catch (e) {
+                alert("خطأ في الحفظ");
+            }
+        }
 
         async function addBook() {
             const t = document.getElementById('title').value;
             const p = document.getElementById('price').value;
-            if(!t || !p) return alert("املأ البيانات");
+            const c = document.getElementById('cover').value;
+            const d = document.getElementById('desc').value;
+
+            if(!t || !p || !c) return alert("الرجاء إدخال اسم الكتاب والسعر والصورة");
+
             await db.collection('books').add({
                 uid: auth.currentUser.uid,
                 title: t,
                 price: p,
-                cover: document.getElementById('cover').value,
-                desc: document.getElementById('desc').value,
+                cover: c,
+                desc: d,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("تم النشر!");
+            alert("تم نشر الكتاب بنجاح!");
             location.reload();
         }
 
@@ -229,7 +243,7 @@
             const copyText = document.getElementById("myStoreLink");
             copyText.select();
             document.execCommand("copy");
-            alert("تم النسخ بنجاح!");
+            alert("تم نسخ رابط متجرك بنجاح!");
         }
     </script>
 </body>
