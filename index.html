@@ -3,136 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookify | منصة الناشرين الاحترافية</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <title>Bookify | لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --bg-dark: #0a0a0a;
-            --bg-card: #161616;
-            --gold: #D4AF37;
-            --gold-hover: #F9E076;
-            --text-cream: #F5F5F5;
-            --text-muted: #888888;
-            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        :root { --bg: #0a0a0a; --card: #161616; --gold: #D4AF37; --text: #F5F5F5; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); padding-top: 100px; }
+        
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 7%; }
+        .admin-card { background: var(--card); border-radius: 20px; padding: 30px; border: 1px solid #222; margin-bottom: 25px; }
+        
+        /* بطاقة المكتبة التي طلبتها */
+        .store-preview-card {
+            background: linear-gradient(45deg, #161616, #222);
+            border: 2px solid var(--gold); border-radius: 20px; padding: 30px;
+            text-align: center; cursor: pointer; transition: 0.3s;
         }
+        .store-preview-card:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(212,175,55,0.2); }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-dark); color: var(--text-cream); }
-
-        /* الهيدر */
-        nav {
-            height: 90px; display: flex; justify-content: space-between; align-items: center;
-            padding: 0 7%; background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(15px);
-            position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-        }
-        .logo { font-size: 2.2rem; font-weight: 900; color: var(--gold); }
-
-        .btn-auth {
-            background: transparent; color: var(--gold); border: 2px solid var(--gold);
-            padding: 10px 25px; border-radius: 50px; font-weight: 700; cursor: pointer; transition: var(--transition);
-        }
-
-        /* البانر الرئيسي */
-        .hero {
-            height: 100vh; display: flex; align-items: center; padding: 0 7%;
-            background: radial-gradient(circle at top left, #1a1a1a 0%, #0a0a0a 100%);
-        }
-        .hero-content h1 { font-size: 4rem; margin-bottom: 25px; }
-        .hero-content h1 span { color: var(--gold); }
-        .btn-main {
-            background: linear-gradient(45deg, var(--gold), var(--gold-hover));
-            color: #000; padding: 18px 45px; border-radius: 12px; font-size: 1.2rem;
-            font-weight: 900; border: none; cursor: pointer; transition: var(--transition);
-        }
-
-        /* لوحة التحكم */
-        #dashboard { display: none; padding-top: 120px; min-height: 100vh; }
-        .dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 30px; padding: 0 7%; }
-
-        .sidebar { background: var(--bg-card); border-radius: 24px; padding: 40px 20px; border: 1px solid #222; text-align: center; }
-        .profile-img { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--gold); margin-bottom: 20px; }
-        .user-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; cursor: pointer; border-bottom: 1px dashed transparent; transition: 0.3s; }
-        .user-name:hover { border-color: var(--gold); }
-
-        .paywall-content { background: var(--bg-card); border-radius: 24px; padding: 60px; text-align: center; border: 1px dashed var(--gold); }
-        .whatsapp-btn { display: inline-block; background: #25D366; color: white; padding: 18px 35px; border-radius: 12px; font-weight: 700; text-decoration: none; margin-top: 20px; }
-
-        /* نموذج الإضافة */
-        #activeContent { display: none; }
-        .share-box { background: rgba(212, 175, 55, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 30px; border: 1px solid var(--gold); }
-        .book-form-card { background: var(--bg-card); padding: 30px; border-radius: 20px; border: 1px solid #333; margin-bottom: 30px; }
-        .book-form-card input, .book-form-card textarea {
-            width: 100%; padding: 15px; margin-bottom: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 10px; font-family: 'Tajawal';
-        }
-
-        .section-label { color: var(--gold); margin-bottom: 15px; font-weight: 700; display: block; }
+        input, textarea { width: 100%; padding: 15px; margin-bottom: 15px; background: #000; border: 1px solid #333; color: #fff; border-radius: 12px; font-family: 'Tajawal'; }
+        .btn-gold { background: var(--gold); color: #000; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 900; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-gold:hover { background: #f9e076; }
+        
+        #editStorePanel { display: none; } /* يفتح عند الضغط على البطاقة */
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="logo">Bookify</div>
-        <button class="btn-auth" id="loginBtn">تسجيل الدخول</button>
-    </nav>
-
-    <section class="hero" id="heroSection">
-        <div class="hero-content">
-            <h1>حوّل كتبك إلى <br><span>تجارة ذهبية</span></h1>
-            <p style="color: var(--text-muted); margin-bottom: 30px;">انضم لـ Bookify وابدأ بيع كتبك عبر مكتبتك الخاصة اليوم.</p>
-            <button class="btn-main" onclick="signIn()">سجل الآن مجاناً</button>
+    <div class="container">
+        <div id="storeCardSection">
+            <h3 style="color: var(--gold); margin-bottom: 20px;">مكتبتك المنشورة:</h3>
+            <div class="store-preview-card" onclick="openStoreManager()">
+                <i class="fas fa-store fa-3x" style="color: var(--gold); margin-bottom: 15px;"></i>
+                <h2 id="displayStoreName">جاري التحميل...</h2>
+                <p style="color: #888;">اضغط هنا لتعديل بيانات المكتبة، وسيلة الدفع، والروابط</p>
+            </div>
         </div>
-    </section>
 
-    <section id="dashboard">
-        <div class="dashboard-grid">
-            <aside class="sidebar">
-                <img id="uImg" src="" class="profile-img">
-                <div id="uName" class="user-name" contenteditable="true">تحميل...</div>
-                <div id="uEmail" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;"></div>
-                <div id="statusLabel" style="color: var(--gold); margin-bottom: 20px;">الحساب: قيد الانتظار</div>
-                
-                <hr style="border: 0; border-top: 1px solid #333; margin-bottom: 20px;">
-                
-                <div style="text-align: right; padding: 0 10px;">
-                    <label class="section-label" style="font-size: 0.9rem;">إعدادات المكتبة:</label>
-                    <input type="number" id="userPhone" placeholder="رقم واتساب (249...)" style="width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px;">
-                    <textarea id="paymentInfo" placeholder="وسيلة الدفع (مثال: بنكك 12345)" style="width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 15px; font-family: 'Tajawal'; resize: none;"></textarea>
-                    <button class="btn-auth" style="width: 100%; padding: 8px;" onclick="updateProfile()">حفظ البيانات</button>
-                </div>
-            </aside>
-
-            <main>
-                <div class="paywall-content" id="paywallArea">
-                    <i class="fas fa-lock" style="font-size: 3rem; color: var(--gold); margin-bottom: 20px;"></i>
-                    <h2>بانتظار تفعيل الاشتراك</h2>
-                    <p>تواصل معنا لتفعيل حسابك والبدء في رفع الكتب.</p>
-                    <a href="https://wa.me/249122892258" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> تواصل عبر واتساب</a>
-                </div>
-
-                <div id="activeContent">
-                    <div class="share-box">
-                        <h4 style="margin-bottom: 10px;">رابط مكتبتك للنشر:</h4>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="myStoreLink" readonly style="flex: 1; background: #000; color: var(--gold); border: none; padding: 10px; border-radius: 5px;">
-                            <button class="btn-auth" onclick="copyLink()">نسخ</button>
-                        </div>
-                    </div>
-
-                    <div class="book-form-card">
-                        <h3 style="margin-bottom: 20px; color: var(--gold);">+ إضافة كتاب جديد</h3>
-                        <input type="text" id="title" placeholder="عنوان الكتاب">
-                        <input type="number" id="price" placeholder="السعر (ج.س)">
-                        <input type="text" id="cover" placeholder="رابط صورة الغلاف">
-                        <textarea id="desc" rows="3" placeholder="وصف الكتاب"></textarea>
-                        <button class="btn-main" style="width: 100%;" onclick="addBook()">نشر الكتاب في مكتبتك</button>
-                    </div>
-                </div>
-            </main>
+        <div id="editStorePanel" class="admin-card">
+            <h3 style="color: var(--gold); margin-bottom: 20px;"><i class="fas fa-edit"></i> إدارة المكتبة</h3>
+            <input type="text" id="storeName" placeholder="اسم المكتبة">
+            <input type="number" id="storePhone" placeholder="رقم الواتساب (249...)">
+            <textarea id="storePayment" placeholder="وسيلة الدفع (مثلاً: بنكك | 1234567)"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-gold" onclick="saveStoreSettings()">حفظ البيانات</button>
+                <button class="btn-gold" style="background:#333; color:#fff;" onclick="copyStoreLink()">نسخ الرابط</button>
+                <button class="btn-gold" style="background:#cc0000; color:#fff;" onclick="closeStoreManager()">إغلاق</button>
+            </div>
         </div>
-    </section>
+
+        <div class="admin-card" style="margin-top: 40px;">
+            <h3 style="color: var(--gold); margin-bottom: 20px;">➕ إضافة كتاب جديد</h3>
+            <input type="text" id="bookTitle" placeholder="اسم الكتاب">
+            <input type="number" id="bookPrice" placeholder="السعر (ج.س)">
+            <input type="text" id="bookCover" placeholder="رابط الصورة">
+            <button class="btn-gold" onclick="addNewBook()">نشر الكتاب</button>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -143,7 +71,7 @@
             apiKey: "AIzaSyB95xhEp4Ssa4DqOPt9_FP7J8ETizhdh-I",
             authDomain: "bookify-bfe88.firebaseapp.com",
             projectId: "bookify-bfe88",
-            storageBucket: "bookify-bfe88.firebasestorage.app",
+            storageBucket: "bookify-bfe88.appspot.com",
             messagingSenderId: "852922537250",
             appId: "1:852922537250:web:aa12b414eb2f156b8dc17b"
         };
@@ -151,99 +79,59 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        async function signIn() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                await auth.signInWithPopup(provider);
-            } catch (error) {
-                alert("حدث خطأ: " + error.message);
-            }
-        }
-
-        document.getElementById('loginBtn').onclick = () => {
-            if(auth.currentUser) auth.signOut().then(() => location.reload());
-            else signIn();
-        };
-
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                document.getElementById('heroSection').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('loginBtn').innerText = "تسجيل الخروج";
-                
-                const userRef = db.collection('users').doc(user.uid);
-                const doc = await userRef.get();
-                
-                if(!doc.exists) {
-                    await userRef.set({
-                        name: user.displayName,
-                        email: user.email,
-                        status: 'pending',
-                        phone: '',
-                        payment: '',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                } else {
-                    const data = doc.data();
-                    document.getElementById('uName').innerText = data.name || user.displayName;
-                    document.getElementById('uImg').src = user.photoURL;
-                    document.getElementById('uEmail').innerText = user.email;
-                    document.getElementById('userPhone').value = data.phone || '';
-                    document.getElementById('paymentInfo').value = data.payment || '';
-                    
-                    if(data.status === 'active') {
-                        document.getElementById('paywallArea').style.display = 'none';
-                        document.getElementById('activeContent').style.display = 'block';
-                        document.getElementById('statusLabel').innerText = "الحساب: عضوية ملكية";
-                        document.getElementById('myStoreLink').value = window.location.href.split('index.html')[0] + 'store.html?id=' + user.uid;
-                    }
-                }
-            }
+        auth.onAuthStateChanged(user => {
+            if(user) loadDashboard(user.uid);
+            else window.location.href = "login.html"; // أو شاشة الدخول الخاصة بك
         });
 
-        async function updateProfile() {
-            const user = auth.currentUser;
-            const newName = document.getElementById('uName').innerText;
-            const phone = document.getElementById('userPhone').value;
-            const payment = document.getElementById('paymentInfo').value;
-
-            try {
-                await db.collection('users').doc(user.uid).update({
-                    name: newName,
-                    phone: phone,
-                    payment: payment
-                });
-                alert("تم حفظ بيانات مكتبتك بنجاح!");
-            } catch (e) {
-                alert("خطأ في الحفظ");
+        async function loadDashboard(uid) {
+            const doc = await db.collection('users').doc(uid).get();
+            if(doc.exists) {
+                const data = doc.data();
+                document.getElementById('displayStoreName').innerText = data.name || "مكتبتي";
+                document.getElementById('storeName').value = data.name || "";
+                document.getElementById('storePhone').value = data.phone || "";
+                document.getElementById('storePayment').value = data.payment || "";
             }
         }
 
-        async function addBook() {
-            const t = document.getElementById('title').value;
-            const p = document.getElementById('price').value;
-            const c = document.getElementById('cover').value;
-            const d = document.getElementById('desc').value;
+        function openStoreManager() {
+            document.getElementById('storeCardSection').style.display = 'none';
+            document.getElementById('editStorePanel').style.display = 'block';
+        }
 
-            if(!t || !p || !c) return alert("الرجاء إدخال اسم الكتاب والسعر والصورة");
+        function closeStoreManager() {
+            document.getElementById('storeCardSection').style.display = 'block';
+            document.getElementById('editStorePanel').style.display = 'none';
+        }
 
-            await db.collection('books').add({
-                uid: auth.currentUser.uid,
-                title: t,
-                price: p,
-                cover: c,
-                desc: d,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        async function saveStoreSettings() {
+            const user = auth.currentUser;
+            await db.collection('users').doc(user.uid).update({
+                name: document.getElementById('storeName').value,
+                phone: document.getElementById('storePhone').value,
+                payment: document.getElementById('storePayment').value
             });
-            alert("تم نشر الكتاب بنجاح!");
+            alert("تم حفظ البيانات!");
             location.reload();
         }
 
-        function copyLink() {
-            const copyText = document.getElementById("myStoreLink");
-            copyText.select();
-            document.execCommand("copy");
-            alert("تم نسخ رابط متجرك بنجاح!");
+        async function addNewBook() {
+            const user = auth.currentUser;
+            await db.collection('books').add({
+                uid: user.uid,
+                title: document.getElementById('bookTitle').value,
+                price: document.getElementById('bookPrice').value,
+                cover: document.getElementById('bookCover').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("تم إضافة الكتاب!");
+        }
+
+        function copyStoreLink() {
+            const link = window.location.href.replace('index.html', 'store.html') + "?id=" + auth.currentUser.uid;
+            navigator.clipboard.writeText(link);
+            alert("تم نسخ الرابط!");
         }
     </script>
 </body>
