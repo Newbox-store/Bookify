@@ -3,62 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookify | لوحة التحكم</title>
+    <title>Bookify | إدارة مكتبتك</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #0a0a0a; --card: #161616; --gold: #D4AF37; --text: #F5F5F5; }
+        :root { --bg: #0a0a0a; --card: #161616; --gold: #D4AF37; --text: #f5f5f5; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); padding-top: 100px; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); }
         
-        .container { max-width: 1000px; margin: 0 auto; padding: 0 7%; }
-        .admin-card { background: var(--card); border-radius: 20px; padding: 30px; border: 1px solid #222; margin-bottom: 25px; }
-        
-        /* بطاقة المكتبة التي طلبتها */
-        .store-preview-card {
-            background: linear-gradient(45deg, #161616, #222);
-            border: 2px solid var(--gold); border-radius: 20px; padding: 30px;
-            text-align: center; cursor: pointer; transition: 0.3s;
-        }
-        .store-preview-card:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(212,175,55,0.2); }
+        /* شاشة تسجيل الدخول */
+        #authScreen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .btn-google { background: white; color: #000; padding: 15px 30px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
 
-        input, textarea { width: 100%; padding: 15px; margin-bottom: 15px; background: #000; border: 1px solid #333; color: #fff; border-radius: 12px; font-family: 'Tajawal'; }
-        .btn-gold { background: var(--gold); color: #000; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 900; cursor: pointer; width: 100%; transition: 0.3s; }
-        .btn-gold:hover { background: #f9e076; }
+        /* شاشة الدفع والتفعيل */
+        #paywall { display: none; text-align: center; padding: 100px 20px; }
+        .btn-wa { background: #25D366; color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; display: inline-block; margin-top: 20px; }
+
+        /* لوحة التحكم الرئيسية */
+        #dashboard { display: none; padding: 40px 7%; }
+        .store-card-preview { background: var(--card); border: 2px dashed var(--gold); border-radius: 20px; padding: 40px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .store-card-preview:hover { background: #1a1a1a; }
+
+        /* محرر المكتبة (الشكل المصغر) */
+        #editor { display: none; padding: 20px; border: 1px solid #333; border-radius: 20px; background: #111; margin-top: 20px; }
+        .edit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; position: sticky; top: 10px; z-index: 100; background: #111; padding: 10px; border-radius: 10px; }
         
-        #editStorePanel { display: none; } /* يفتح عند الضغط على البطاقة */
+        .editable { cursor: pointer; border-bottom: 1px dashed #555; transition: 0.3s; padding: 5px; }
+        .editable:hover { background: rgba(212, 175, 55, 0.1); border-color: var(--gold); }
+        
+        .book-item { background: var(--card); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #222; }
+        .book-img-placeholder { width: 150px; height: 200px; background: #000; display: flex; justify-content: center; align-items: center; border: 1px dashed var(--gold); margin: 10px 0; border-radius: 10px; cursor: pointer; }
+        .book-img-actual { width: 150px; height: 200px; object-fit: cover; border-radius: 10px; cursor: pointer; }
+
+        .btn-action { background: var(--gold); color: #000; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="storeCardSection">
-            <h3 style="color: var(--gold); margin-bottom: 20px;">مكتبتك المنشورة:</h3>
-            <div class="store-preview-card" onclick="openStoreManager()">
-                <i class="fas fa-store fa-3x" style="color: var(--gold); margin-bottom: 15px;"></i>
-                <h2 id="displayStoreName">جاري التحميل...</h2>
-                <p style="color: #888;">اضغط هنا لتعديل بيانات المكتبة، وسيلة الدفع، والروابط</p>
+    <div id="authScreen">
+        <h1 style="color: var(--gold); margin-bottom: 20px;">Bookify</h1>
+        <button class="btn-google" onclick="login()"><i class="fab fa-google"></i> الدخول بواسطة جوجل</button>
+    </div>
+
+    <div id="paywall">
+        <h2>بانتظار تفعيل الحساب</h2>
+        <p>تواصل معنا لتفعيل مكتبتك والبدء في البيع</p>
+        <a href="https://wa.me/249122892258" class="btn-wa"><i class="fab fa-whatsapp"></i> تواصل للدفع والتفعيل</a>
+    </div>
+
+    <div id="dashboard">
+        <div id="createStoreBtn" style="display:none; text-align: center;">
+            <button class="btn-action" onclick="showCreateStore()">+ أضف مكتبتك</button>
+        </div>
+
+        <div id="storePreview" style="display:none;">
+            <div class="store-card-preview" onclick="openEditor()">
+                <h2 id="prevName">اسم المكتبة</h2>
+                <p style="color: var(--gold); margin-top: 10px;">اضغط للتعديل</p>
             </div>
         </div>
 
-        <div id="editStorePanel" class="admin-card">
-            <h3 style="color: var(--gold); margin-bottom: 20px;"><i class="fas fa-edit"></i> إدارة المكتبة</h3>
-            <input type="text" id="storeName" placeholder="اسم المكتبة">
-            <input type="number" id="storePhone" placeholder="رقم الواتساب (249...)">
-            <textarea id="storePayment" placeholder="وسيلة الدفع (مثلاً: بنكك | 1234567)"></textarea>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-gold" onclick="saveStoreSettings()">حفظ البيانات</button>
-                <button class="btn-gold" style="background:#333; color:#fff;" onclick="copyStoreLink()">نسخ الرابط</button>
-                <button class="btn-gold" style="background:#cc0000; color:#fff;" onclick="closeStoreManager()">إغلاق</button>
+        <div id="editor">
+            <div class="edit-header">
+                <button class="btn-action" onclick="saveAll()">حفظ التعديلات</button>
+                <button class="btn-action" style="background:#333; color:#fff;" onclick="copyStoreLink()">نسخ الرابط</button>
+                <button class="btn-action" style="background:#cc0000; color:#fff;" onclick="location.reload()">إغلاق</button>
             </div>
-        </div>
 
-        <div class="admin-card" style="margin-top: 40px;">
-            <h3 style="color: var(--gold); margin-bottom: 20px;">➕ إضافة كتاب جديد</h3>
-            <input type="text" id="bookTitle" placeholder="اسم الكتاب">
-            <input type="number" id="bookPrice" placeholder="السعر (ج.س)">
-            <input type="text" id="bookCover" placeholder="رابط الصورة">
-            <button class="btn-gold" onclick="addNewBook()">نشر الكتاب</button>
+            <h1 id="editStoreName" class="editable" onclick="editField('editStoreName', 'text', 'name')">اسم المكتبة</h1>
+            
+            <div style="margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 10px;">
+                <label>معلومات الدفع:</label>
+                <p id="editPayment" class="editable" onclick="editField('editPayment', 'textarea', 'payment')">أدخل وسيلة الدفع هنا...</p>
+                <label>رقم واتساب الناشر (249...):</label>
+                <p id="editPhone" class="editable" onclick="editField('editPhone', 'number', 'phone')">249...</p>
+            </div>
+
+            <hr style="border:0; border-top:1px solid #333; margin: 30px 0;">
+
+            <div id="booksList">
+                <h3>الكتب المنشورة:</h3>
+                </div>
+            <button class="btn-action" onclick="addNewBookPlaceholder()">+ إضافة كتاب جديد</button>
         </div>
     </div>
 
@@ -79,59 +106,138 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        auth.onAuthStateChanged(user => {
-            if(user) loadDashboard(user.uid);
-            else window.location.href = "login.html"; // أو شاشة الدخول الخاصة بك
+        let userData = {};
+        let books = [];
+
+        async function login() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            await auth.signInWithPopup(provider);
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                document.getElementById('authScreen').style.display = 'none';
+                const doc = await db.collection('users').doc(user.uid).get();
+                
+                if (!doc.exists) {
+                    await db.collection('users').doc(user.uid).set({ status: 'pending', name: user.displayName });
+                    document.getElementById('paywall').style.display = 'block';
+                } else {
+                    userData = doc.data();
+                    if (userData.status === 'pending') {
+                        document.getElementById('paywall').style.display = 'block';
+                    } else {
+                        document.getElementById('dashboard').style.display = 'block';
+                        if (!userData.hasStore) {
+                            document.getElementById('createStoreBtn').style.display = 'block';
+                        } else {
+                            showStorePreview();
+                        }
+                    }
+                }
+            }
         });
 
-        async function loadDashboard(uid) {
-            const doc = await db.collection('users').doc(uid).get();
-            if(doc.exists) {
-                const data = doc.data();
-                document.getElementById('displayStoreName').innerText = data.name || "مكتبتي";
-                document.getElementById('storeName').value = data.name || "";
-                document.getElementById('storePhone').value = data.phone || "";
-                document.getElementById('storePayment').value = data.payment || "";
+        function showCreateStore() {
+            const name = prompt("أدخل اسم مكتبتك:");
+            if (name) {
+                db.collection('users').doc(auth.currentUser.uid).update({ hasStore: true, name: name });
+                location.reload();
             }
         }
 
-        function openStoreManager() {
-            document.getElementById('storeCardSection').style.display = 'none';
-            document.getElementById('editStorePanel').style.display = 'block';
+        function showStorePreview() {
+            document.getElementById('createStoreBtn').style.display = 'none';
+            document.getElementById('storePreview').style.display = 'block';
+            document.getElementById('prevName').innerText = userData.name;
         }
 
-        function closeStoreManager() {
-            document.getElementById('storeCardSection').style.display = 'block';
-            document.getElementById('editStorePanel').style.display = 'none';
+        async function openEditor() {
+            document.getElementById('storePreview').style.display = 'none';
+            document.getElementById('editor').style.display = 'block';
+            
+            document.getElementById('editStoreName').innerText = userData.name;
+            document.getElementById('editPayment').innerText = userData.payment || "اضغط لإضافة وسيلة دفع";
+            document.getElementById('editPhone').innerText = userData.phone || "اضغط لإضافة رقم";
+            
+            loadBooks();
         }
 
-        async function saveStoreSettings() {
-            const user = auth.currentUser;
-            await db.collection('users').doc(user.uid).update({
-                name: document.getElementById('storeName').value,
-                phone: document.getElementById('storePhone').value,
-                payment: document.getElementById('storePayment').value
+        async function loadBooks() {
+            const snap = await db.collection('books').where('uid', '==', auth.currentUser.uid).get();
+            const list = document.getElementById('booksList');
+            list.innerHTML = "";
+            books = [];
+            snap.forEach(doc => {
+                const book = { id: doc.id, ...doc.data() };
+                books.push(book);
+                renderBook(book);
             });
-            alert("تم حفظ البيانات!");
+        }
+
+        function renderBook(book) {
+            const list = document.getElementById('booksList');
+            const html = `
+                <div class="book-item" id="book-${book.id}">
+                    <h4 class="editable" onclick="editBookField('${book.id}', 'title')">${book.title || 'اسم الكتاب'}</h4>
+                    <div onclick="editBookField('${book.id}', 'cover')">
+                        ${book.cover ? `<img src="${book.cover}" class="book-img-actual">` : `<div class="book-img-placeholder">أضف صورة</div>`}
+                    </div>
+                    <p class="editable" onclick="editBookField('${book.id}', 'desc')">${book.desc || 'أضف وصفاً للعملاء...'}</p>
+                    <p class="editable" style="color:var(--gold)" onclick="editBookField('${book.id}', 'price')">${book.price || '0'} ج.س</p>
+                </div>
+            `;
+            list.innerHTML += html;
+        }
+
+        function editField(id, type, dbField) {
+            const current = document.getElementById(id).innerText;
+            const newVal = prompt("تعديل القيمة:", current);
+            if (newVal !== null) {
+                document.getElementById(id).innerText = newVal;
+                userData[dbField] = newVal;
+            }
+        }
+
+        function editBookField(bookId, field) {
+            const newVal = prompt("أدخل القيمة الجديدة:");
+            if (newVal !== null) {
+                const bookIndex = books.findIndex(b => b.id === bookId);
+                books[bookIndex][field] = newVal;
+                // إعادة عرض الكتاب لتحديث الشكل
+                location.reload(); // للتبسيط عند التعديل
+            }
+        }
+
+        async function addNewBookPlaceholder() {
+            const res = await db.collection('books').add({
+                uid: auth.currentUser.uid,
+                title: "كتاب جديد",
+                price: "0",
+                cover: "",
+                desc: "وصف الكتاب",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
             location.reload();
         }
 
-        async function addNewBook() {
-            const user = auth.currentUser;
-            await db.collection('books').add({
-                uid: user.uid,
-                title: document.getElementById('bookTitle').value,
-                price: document.getElementById('bookPrice').value,
-                cover: document.getElementById('bookCover').value,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("تم إضافة الكتاب!");
+        async function saveAll() {
+            const uid = auth.currentUser.uid;
+            // حفظ بيانات المستخدم
+            await db.collection('users').doc(uid).update(userData);
+            
+            // حفظ الكتب
+            for (let book of books) {
+                const { id, ...data } = book;
+                await db.collection('books').doc(id).update(data);
+            }
+            alert("تم حفظ كل التعديلات بنجاح ✅");
         }
 
         function copyStoreLink() {
             const link = window.location.href.replace('index.html', 'store.html') + "?id=" + auth.currentUser.uid;
             navigator.clipboard.writeText(link);
-            alert("تم نسخ الرابط!");
+            alert("تم نسخ الرابط لنشره للزبائن!");
         }
     </script>
 </body>
