@@ -48,7 +48,7 @@
         .book-cover {
             width: 100%; height: 380px; object-fit: cover;
             border-radius: 15px; margin-bottom: 20px;
-            background: #222; /* لودر بسيط في حال لم تظهر الصورة */
+            background: #222;
         }
 
         .book-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; color: var(--text); }
@@ -59,6 +59,7 @@
             background: var(--gold); color: #000; text-align: center;
             padding: 15px; border-radius: 12px; text-decoration: none;
             font-weight: 900; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
+            cursor: pointer; border: none; width: 100%; font-family: 'Tajawal';
         }
         .buy-btn:hover { background: #f9e076; transform: scale(1.02); }
 
@@ -83,7 +84,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyB95xhEp4Ssa4DqOPt9_FP7J8ETizhdh-I",
             authDomain: "bookify-bfe88.firebaseapp.com",
@@ -96,7 +96,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 1. الحصول على رقم الناشر من الرابط
         const urlParams = new URLSearchParams(window.location.search);
         const pubId = urlParams.get('id');
 
@@ -108,13 +107,17 @@
 
         async function fetchStoreData(uid) {
             try {
-                // جلب اسم الناشر
+                // 1. جلب بيانات الناشر (الاسم، الرقم، الدفع)
                 const userDoc = await db.collection('users').doc(uid).get();
-                if (userDoc.exists) {
-                    document.getElementById('storeTitle').innerText = "مكتبة " + userDoc.data().name;
+                if (!userDoc.exists) {
+                    document.getElementById('loader').innerText = "المكتبة غير موجودة.";
+                    return;
                 }
+                
+                const userData = userDoc.data();
+                document.getElementById('storeTitle').innerText = userData.name || "مكتبة ناشر";
 
-                // جلب الكتب الخاصة بهذا الناشر فقط
+                // 2. جلب الكتب الخاصة بهذا الناشر
                 const snapshot = await db.collection('books')
                                    .where('uid', '==', uid)
                                    .orderBy('timestamp', 'desc')
@@ -124,7 +127,7 @@
                 document.getElementById('loader').style.display = 'none';
 
                 if (snapshot.empty) {
-                    grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: #888;'>لا توجد كتب منشورة في هذه المكتبة بعد.</p>";
+                    grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: #888;'>لا توجد كتب منشورة حالياً.</p>";
                     return;
                 }
 
@@ -132,21 +135,33 @@
                     const book = doc.data();
                     const bookHtml = `
                         <div class="book-card">
-                            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=No+Image'}" class="book-cover" alt="${book.title}">
+                            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=No+Image'}" class="book-cover">
                             <h3 class="book-title">${book.title}</h3>
                             <div class="book-price">${book.price} ج.س</div>
-                            <p class="book-desc">${book.desc || 'لا يوجد وصف متاح لهذا الكتاب.'}</p>
-                            <a href="https://wa.me/249122892258?text=السلام عليكم، أرغب في شراء كتاب: ${encodeURIComponent(book.title)}" class="buy-btn">
+                            <p class="book-desc">${book.desc || 'وصف الكتاب غير متوفر.'}</p>
+                            <button onclick="handleBuy('${book.title}', '${book.price}', '${userData.phone}', '${userData.payment}')" class="buy-btn">
                                 <i class="fab fa-whatsapp"></i> اطلب الآن عبر واتساب
-                            </a>
+                            </button>
                         </div>
                     `;
                     grid.innerHTML += bookHtml;
                 });
 
             } catch (error) {
-                console.error("Error loading store:", error);
+                console.error(error);
                 document.getElementById('loader').innerText = "حدث خطأ أثناء تحميل البيانات.";
+            }
+        }
+
+        // دالة الشراء مع رسالة الدفع وتوجيه الواتساب
+        function handleBuy(title, price, phone, payment) {
+            const paymentText = payment || "سيتم تزويدك بها عبر الواتساب";
+            const message = `يمكنك الدفع عبر "${paymentText}" واضغط علي زر ارسل الاشعار الذي سوف يحولك الي وتساب . ارسل الاشعار هنالك وانتظر مراجعه الاشعار . اذا حدث اي مشكله تواصل معنا .`;
+            
+            if(confirm(message)) {
+                const whatsappText = `السلام عليكم، أرغب في شراء كتاب: ${title}.\nالسعر: ${price} ج.س\nلقد اطلعت على بيانات الدفع: (${paymentText})`;
+                const finalPhone = phone || "249122892258"; // رقم افتراضي في حال لم يضع الناشر رقمه
+                window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(whatsappText)}`, '_blank');
             }
         }
     </script>
