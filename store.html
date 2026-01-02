@@ -4,66 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المكتبة الرسمية | Bookify</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --bg: #0a0a0a;
-            --card: #161616;
-            --gold: #D4AF37;
-            --text: #F5F5F5;
-            --muted: #888888;
-        }
-
+        :root { --bg: #0a0a0a; --card: #161616; --gold: #D4AF37; --text: #F5F5F5; --muted: #888888; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; }
-
-        /* رأس الصفحة */
-        .store-header {
-            padding: 60px 7%; text-align: center;
-            background: linear-gradient(to bottom, #1a1a1a, var(--bg));
-            border-bottom: 1px solid #222;
-        }
-        .store-header .brand { color: var(--gold); font-weight: 900; letter-spacing: 2px; margin-bottom: 10px; }
-        .store-header h1 { font-size: 2.5rem; margin-bottom: 15px; }
-
-        /* شبكة الكتب */
+        .store-header { padding: 60px 7%; text-align: center; background: linear-gradient(to bottom, #1a1a1a, var(--bg)); border-bottom: 1px solid #222; }
+        .brand { color: var(--gold); font-weight: 900; letter-spacing: 2px; margin-bottom: 10px; }
         .container { max-width: 1200px; margin: 0 auto; padding: 40px 7%; }
-        .books-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        /* كرت الكتاب */
-        .book-card {
-            background: var(--card); border-radius: 20px; padding: 20px;
-            border: 1px solid #222; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; flex-direction: column;
-        }
-        .book-card:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-        .book-cover {
-            width: 100%; height: 380px; object-fit: cover;
-            border-radius: 15px; margin-bottom: 20px;
-            background: #222;
-        }
-
-        .book-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+        .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
+        .book-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #222; transition: 0.4s; display: flex; flex-direction: column; }
+        .book-card:hover { transform: translateY(-10px); border-color: var(--gold); }
+        .book-cover { width: 100%; height: 380px; object-fit: cover; border-radius: 15px; margin-bottom: 20px; background: #222; }
+        .book-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
         .book-price { font-size: 1.25rem; color: var(--gold); font-weight: 900; margin-bottom: 15px; }
-        .book-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; flex-grow: 1; }
-
-        .buy-btn {
-            background: var(--gold); color: #000; text-align: center;
-            padding: 15px; border-radius: 12px; text-decoration: none;
-            font-weight: 900; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
-            cursor: pointer; border: none; width: 100%; font-family: 'Tajawal';
-        }
-        .buy-btn:hover { background: #f9e076; transform: scale(1.02); }
-
-        /* لودر التحميل */
+        .buy-btn { background: var(--gold); color: #000; text-align: center; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; border: none; width: 100%; font-family: 'Tajawal'; transition: 0.3s; }
+        .buy-btn:hover { background: #f9e076; }
         #loader { text-align: center; padding: 50px; font-size: 1.2rem; color: var(--gold); }
     </style>
 </head>
@@ -72,7 +29,7 @@
     <header class="store-header">
         <div class="brand">BOOKIFY EXCLUSIVE</div>
         <h1 id="storeTitle">مكتبة الناشر</h1>
-        <p id="storeStatus" style="color: var(--muted);">تصفح أفضل الكتب واختر ما يناسبك</p>
+        <p id="storeStatus" style="color: var(--muted);">تصفح الكتب المتاحة للشراء</p>
     </header>
 
     <div class="container">
@@ -88,7 +45,7 @@
             apiKey: "AIzaSyB95xhEp4Ssa4DqOPt9_FP7J8ETizhdh-I",
             authDomain: "bookify-bfe88.firebaseapp.com",
             projectId: "bookify-bfe88",
-            storageBucket: "bookify-bfe88.firebasestorage.app",
+            storageBucket: "bookify-bfe88.appspot.com",
             messagingSenderId: "852922537250",
             appId: "1:852922537250:web:aa12b414eb2f156b8dc17b"
         };
@@ -102,66 +59,56 @@
         if (pubId) {
             fetchStoreData(pubId);
         } else {
-            document.getElementById('loader').innerHTML = "<i class='fas fa-exclamation-triangle'></i> عذراً، هذا الرابط غير صالح.";
+            document.getElementById('loader').innerHTML = "رابط المتجر غير صالح.";
         }
 
         async function fetchStoreData(uid) {
             try {
-                // 1. جلب بيانات الناشر (الاسم، الرقم، الدفع)
+                // 1. جلب بيانات الناشر
                 const userDoc = await db.collection('users').doc(uid).get();
                 if (!userDoc.exists) {
-                    document.getElementById('loader').innerText = "المكتبة غير موجودة.";
+                    document.getElementById('loader').innerText = "عذراً، هذه المكتبة غير موجودة.";
                     return;
                 }
                 
                 const userData = userDoc.data();
-                document.getElementById('storeTitle').innerText = userData.name || "مكتبة ناشر";
+                document.getElementById('storeTitle').innerText = userData.name || "مكتبة بوكيفاي";
 
-                // 2. جلب الكتب الخاصة بهذا الناشر
-                const snapshot = await db.collection('books')
-                                   .where('uid', '==', uid)
-                                   .orderBy('timestamp', 'desc')
-                                   .get();
-
+                // 2. جلب الكتب (بدون ترتيب معقد لتفادي مشاكل الـ Index)
+                const snapshot = await db.collection('books').where('uid', '==', uid).get();
                 const grid = document.getElementById('publicBooks');
                 document.getElementById('loader').style.display = 'none';
 
                 if (snapshot.empty) {
-                    grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: #888;'>لا توجد كتب منشورة حالياً.</p>";
+                    grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>لا توجد كتب حالياً.</p>";
                     return;
                 }
 
                 snapshot.forEach(doc => {
                     const book = doc.data();
-                    const bookHtml = `
+                    grid.innerHTML += `
                         <div class="book-card">
-                            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=No+Image'}" class="book-cover">
+                            <img src="${book.cover}" class="book-cover">
                             <h3 class="book-title">${book.title}</h3>
                             <div class="book-price">${book.price} ج.س</div>
-                            <p class="book-desc">${book.desc || 'وصف الكتاب غير متوفر.'}</p>
                             <button onclick="handleBuy('${book.title}', '${book.price}', '${userData.phone}', '${userData.payment}')" class="buy-btn">
-                                <i class="fab fa-whatsapp"></i> اطلب الآن عبر واتساب
+                                <i class="fab fa-whatsapp"></i> اطلب الآن
                             </button>
                         </div>
                     `;
-                    grid.innerHTML += bookHtml;
                 });
-
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loader').innerText = "حدث خطأ أثناء تحميل البيانات.";
+            } catch (e) {
+                document.getElementById('loader').innerText = "خطأ في التحميل. تأكد من إعدادات Firebase.";
             }
         }
 
-        // دالة الشراء مع رسالة الدفع وتوجيه الواتساب
         function handleBuy(title, price, phone, payment) {
-            const paymentText = payment || "سيتم تزويدك بها عبر الواتساب";
-            const message = `يمكنك الدفع عبر "${paymentText}" واضغط علي زر ارسل الاشعار الذي سوف يحولك الي وتساب . ارسل الاشعار هنالك وانتظر مراجعه الاشعار . اذا حدث اي مشكله تواصل معنا .`;
+            const payInfo = payment || "تواصل مع الناشر لمعرفة التفاصيل";
+            const msg = `بيانات الدفع:\n${payInfo}\n\nبعد الدفع، اضغط موافق ليتم تحويلك للواتساب لإرسال إشعار الدفع للناشر.`;
             
-            if(confirm(message)) {
-                const whatsappText = `السلام عليكم، أرغب في شراء كتاب: ${title}.\nالسعر: ${price} ج.س\nلقد اطلعت على بيانات الدفع: (${paymentText})`;
-                const finalPhone = phone || "249122892258"; // رقم افتراضي في حال لم يضع الناشر رقمه
-                window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(whatsappText)}`, '_blank');
+            if(confirm(msg)) {
+                const waText = `أريد شراء: ${title}\nالسعر: ${price}\nلقد اطلعت على بيانات الدفع.`;
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(waText)}`, '_blank');
             }
         }
     </script>
